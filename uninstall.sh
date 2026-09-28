@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ ${EUID:-0} -eq 0 ]]; then
+    echo 'Run this script as your user; it invokes sudo only for the system plugin file.' >&2
+    exit 1
+fi
+
 PLUGIN="kwin/effects/plugins/nxglow.so"
 QTPATHS="/usr/lib/qt6/bin/qtpaths"
 for cmd in sudo kwriteconfig6 qdbus6; do

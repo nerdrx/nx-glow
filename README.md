@@ -8,13 +8,15 @@ Showcase: [nerdrx.github.io/nx-glow](https://nerdrx.github.io/nx-glow/).
 
 ## Build and install
 
-From this directory, run `./install.sh`. It builds `build/` locally, then uses `sudo` only to copy the plugin into Qt's system plugin directory. The script enables and loads the effect for the current user.
+On Arch Linux, install build dependencies with `sudo pacman -S cmake ninja gcc kwin qt6-base qt6-declarative extra-cmake-modules vulkan-headers`. From this directory, run `./install.sh` as your user. It builds `build/` locally, then uses `sudo` only to copy the plugin into Qt's system plugin directory. The script enables and loads the effect for the current user.
 
 To build without installing, run `cmake -S . -B build && cmake --build build`. After KWin ABI updates, rebuild and reinstall the effect.
 
-Tune the glow in `kwinrc` under `[Effect-nxglow]`: `Radius` defaults to `110` (range `10–300`); `Strength` defaults to `0.85` (range `0–2`). Edit with System Settings or `kwriteconfig6`, then apply changes with:
+Tune the glow in `kwinrc` under `[Effect-nxglow]`: `Radius` defaults to `110` (range `10–300`); `Strength` defaults to `0.85` (range `0–2`). Set either value with `kwriteconfig6`, then apply changes with `qdbus6`:
 
 ```sh
+kwriteconfig6 --file kwinrc --group Effect-nxglow --key Radius 110
+kwriteconfig6 --file kwinrc --group Effect-nxglow --key Strength 0.85
 qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect nxglow
 ```
 
