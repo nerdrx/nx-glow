@@ -9,7 +9,7 @@ const path = require("node:path");
 const appRoot = path.resolve(__dirname, "..");
 const hubRoot = process.argv[2];
 const archive = path.resolve(
-  process.argv[3] || path.join(appRoot, "dist/nx-glow-0.1.0-linux.tar.gz")
+  process.argv[3] || path.join(appRoot, "dist/nx-glow-0.1.1-linux.tar.gz")
 );
 
 async function main() {
@@ -36,7 +36,7 @@ async function main() {
   const artifact = {
     ...manifestArtifact,
     id: "tarball-prefix-linux",
-    version: "0.1.0",
+    version: "0.1.1",
     assetName: path.basename(archive),
     prefix,
     launchCmd: path.join(prefix, "bin/nx-glow-settings"),

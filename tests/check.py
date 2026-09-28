@@ -26,3 +26,14 @@ far = (150, 320)
 assert pixel("tuned", far)[2] > pixel("after", far)[2] + 5
 assert pixel("zero", probe) == before
 print("PASS: live radius, saturation and brightness controls")
+
+# A wide glow must be a smooth gradient, not the sparse kernel's stair steps.
+quality = Image.open(out / "quality.png").convert("RGB")
+profile = [sum(quality.getpixel((x, y))[2] for y in range(300, 340)) / 40
+           for x in range(80, 200)]
+bins = [sum(profile[i:i+4]) / 4 for i in range(0, len(profile), 4)]
+slopes = [b-a for a, b in zip(bins, bins[1:])]
+ripple = max(abs(b-a) for a, b in zip(slopes, slopes[1:]))
+assert profile[-1] - profile[0] > 50, "Missing glow cannot pass smoothness"
+assert ripple < 1.25, f"Wide-glow stair steps: {ripple:.2f}"
+print(f"PASS: maximum-radius glow smoothness (slope ripple {ripple:.2f})")

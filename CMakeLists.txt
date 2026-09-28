@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(nx-glow VERSION 0.1.0 LANGUAGES CXX)
+project(nx-glow VERSION 0.1.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_AUTOMOC ON)
 set(BUILD_SHARED_LIBS ON)

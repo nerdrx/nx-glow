@@ -77,6 +77,13 @@ def fifth():
 
 def sixth():
     capture("zero.png")
+    for key, value in (("Radius", "300"), ("Strength", "2"), ("Saturation", "1")):
+        subprocess.run(["kwriteconfig6", "--file", "kwinrc", "--group", "Effect-nxglow", "--key", key, value], check=True)
+    dbus("reconfigureEffect", "nxglow")
+    QTimer.singleShot(1000, seventh)
+
+def seventh():
+    capture("quality.png")
     dbus("unloadEffect", "nxglow")
     print("NX_GLOW_SCENE_OK", flush=True)
     app.quit()

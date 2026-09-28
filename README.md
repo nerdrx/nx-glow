@@ -6,6 +6,8 @@ Showcase: [nerdrx.github.io/nx-glow](https://nerdrx.github.io/nx-glow/).
 
 ![nx glow running in a real KWin compositor smoke test](docs/preview.png)
 
+The glow uses a quarter-resolution floating-point scene and a contiguous Gaussian kernel, with paired texture taps for smooth gradients even at maximum radius. Updates load without restarting KWin.
+
 ## Build and install
 
 ### NX Hub
@@ -45,7 +47,7 @@ It also verifies live radius, brightness and saturation changes. The Qt control 
 timeout -k 3 20 gamescope --backend headless -W 800 -H 700 -- env QT_QPA_PLATFORM=xcb python tests/settings_smoke.py
 ```
 
-Build the source bundle with `./package.sh`. Test it against an NX Hub checkout with `node tests/hub.cjs /path/to/nx-hub dist/nx-glow-0.1.0-linux.tar.gz`; this invokes Hub's real manifest validator and install/uninstall engine in temporary directories.
+Build the source bundle with `./package.sh`. Test it against an NX Hub checkout with `node tests/hub.cjs /path/to/nx-hub dist/nx-glow-0.1.1-linux.tar.gz`; this invokes Hub's real manifest validator and install/uninstall engine in temporary directories.
 
 ## License
 

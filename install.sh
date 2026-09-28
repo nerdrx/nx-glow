@@ -39,8 +39,15 @@ BINARY="$BUILD_DIR/plugins/$PLUGIN"
 [[ -f "$BINARY" ]] || { printf 'Build did not produce expected plugin: %s\n' "$BINARY" >&2; exit 1; }
 PLUGIN_DIR="$("$QTPATHS" --plugin-dir)"
 [[ -n "$PLUGIN_DIR" && "$PLUGIN_DIR" = /* ]] || { printf 'Invalid Qt plugin directory: %s\n' "$PLUGIN_DIR" >&2; exit 1; }
+# Qt keeps loaded plugin libraries cached. A unique real path lets updates
+# load immediately without restarting the user's compositor/session.
+BUILD_ID=$(sha256sum "$BINARY")
+BUILD_ID=${BUILD_ID%% *}
+VERSIONED="$PLUGIN_DIR/kwin/effects/nxglow/$BUILD_ID/nxglow.so"
+"${ELEVATE[@]}" install -Dm755 "$BINARY" "$VERSIONED"
+"${ELEVATE[@]}" mkdir -p "$PLUGIN_DIR/kwin/effects/plugins"
+"${ELEVATE[@]}" ln -sfn "$VERSIONED" "$PLUGIN_DIR/$PLUGIN"
 qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.unloadEffect nxglow >/dev/null || true
-"${ELEVATE[@]}" install -Dm755 "$BINARY" "$PLUGIN_DIR/$PLUGIN"
 kwriteconfig6 --file kwinrc --group Plugins --key nxglowEnabled true
 LOAD_RESULT="$(qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.loadEffect nxglow)"
 [[ "$LOAD_RESULT" == true ]] || { printf 'KWin did not load nx glow (result: %s)\n' "$LOAD_RESULT" >&2; exit 1; }

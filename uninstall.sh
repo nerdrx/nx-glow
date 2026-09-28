@@ -23,5 +23,6 @@ PLUGIN_DIR="$("$QTPATHS" --plugin-dir)"
 kwriteconfig6 --file kwinrc --group Plugins --key nxglowEnabled false
 qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.unloadEffect nxglow || true
 "${ELEVATE[@]}" rm -f -- "$PLUGIN_DIR/$PLUGIN"
+"${ELEVATE[@]}" rm -rf -- "$PLUGIN_DIR/kwin/effects/nxglow"
 rm -f -- "$HOME/.local/bin/nx-glow-settings" "${XDG_DATA_HOME:-$HOME/.local/share}/applications/nx-glow-settings.desktop"
 printf 'Disabled and removed nx glow from %s\n' "$PLUGIN_DIR/$PLUGIN"

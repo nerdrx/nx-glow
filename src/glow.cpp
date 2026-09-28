@@ -11,6 +11,7 @@
 #include <KConfigGroup>
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 namespace KWin {
 class NxGlow final : public Effect
@@ -22,12 +23,27 @@ public:
     bool isActive() const override { return !effects->isScreenLocked() && !effects->activeFullScreenEffect(); }
     int requestedEffectChainPosition() const override { return 90; }
     bool blocksDirectScanout() const override { return isActive(); }
+    QString debug(const QString &) const override { return QStringLiteral("nx glow 0.1.1: quarter-resolution, contiguous Gaussian taps"); }
     void reconfigure(ReconfigureFlags) override
     {
         const KConfigGroup c(effects->config(), "Effect-nxglow");
         m_radius = std::clamp(c.readEntry("Radius", 110.0), 10.0, 300.0);
         m_strength = std::clamp(c.readEntry("Strength", 0.85), 0.0, 2.0);
         m_saturation = std::clamp(c.readEntry("Saturation", 1.0), 0.0, 2.0);
+        // Pair adjacent Gaussian taps using linear filtering, without gaps.
+        m_kernel.clear();
+        const int radius = std::ceil(m_radius * captureScale);
+        const double sigma = m_radius * captureScale * 0.375;
+        double total = 1;
+        for (int i = 1; i <= radius; i += 2) {
+            const double a = std::exp(-i * i / (2 * sigma * sigma));
+            const double b = i < radius ? std::exp(-(i + 1) * (i + 1) / (2 * sigma * sigma)) : 0;
+            m_kernel.push_back((i * a + (i + 1) * b) / (a + b));
+            m_kernel.push_back(a + b);
+            total += 2 * (a + b);
+        }
+        m_centerWeight = 1 / total;
+        for (size_t i = 1; i < m_kernel.size(); i += 2) m_kernel[i] /= total;
         effects->addRepaintFull();
     }
     void prePaintScreen(ScreenPrePaintData &data) override
@@ -96,6 +112,9 @@ private:
     bool m_shaderAttempted = false;
     bool m_drawn = false, m_ready = false;
     double m_radius = 110, m_strength = .85, m_saturation = 1;
+    static constexpr double captureScale = 0.25;
+    std::vector<float> m_kernel;
+    float m_centerWeight = 1;
 
     bool prepare(const RenderViewport &viewport, const RenderTarget &target)
     {
@@ -107,8 +126,16 @@ private:
                 uniform vec2 stepSize;
                 uniform float strength;
                 uniform float saturation;
+                uniform vec2 kernel[38];
+                uniform int kernelSize;
+                uniform float centerWeight;
                 in vec2 texcoord0;
                 out vec4 fragColor;
+                vec4 sampleLight(vec2 uv) {
+                    if (any(lessThan(uv, vec2(0))) || any(greaterThan(uv, vec2(1))))
+                        return vec4(0);
+                    return texture(sampler, uv);
+                }
                 void main() {
                     if (stepSize == vec2(0.0)) {
                         vec4 light = texture(sampler, texcoord0);
@@ -117,23 +144,19 @@ private:
                         fragColor = light * strength;
                         return;
                     }
-                    vec4 colour = vec4(0.0);
-                    float total = 0.0;
-                    for (int i = -16; i <= 16; ++i) {
-                        float weight = exp(-float(i*i) / 72.0);
-                        vec2 uv = texcoord0 + float(i) * stepSize;
-                        if (all(greaterThanEqual(uv, vec2(0))) && all(lessThanEqual(uv, vec2(1))))
-                            colour += texture(sampler, uv) * weight;
-                        total += weight;
+                    vec4 colour = texture(sampler, texcoord0) * centerWeight;
+                    for (int i = 0; i < kernelSize; ++i) {
+                        vec2 offset = kernel[i].x * stepSize;
+                        colour += (sampleLight(texcoord0 + offset) + sampleLight(texcoord0 - offset)) * kernel[i].y;
                     }
-                    fragColor = colour / total * strength;
+                    fragColor = colour;
                 }
             )");
         }
         if (!m_shader) return false;
         const auto rect = viewport.renderRect();
-        // A low-resolution GPU-only scene is enough for a broad soft halo.
-        const double scale = 0.125;
+        // Quarter-resolution source retains detail; blur samples every texel.
+        const double scale = captureScale;
         const QSize size(std::max(1, int(std::ceil(rect.width() * scale))),
                          std::max(1, int(std::ceil(rect.height() * scale))));
         if (!m_source.resize(size) || !m_horizontal.resize(size) || !m_blurred.resize(size)) return false;
@@ -151,8 +174,8 @@ private:
                                   Region::infinite(), data);
         }
         GLFramebuffer::popFramebuffer();
-        blur(m_source, m_horizontal, QVector2D(m_radius / 16.0 / rect.width(), 0));
-        blur(m_horizontal, m_blurred, QVector2D(0, m_radius / 16.0 / rect.height()));
+        blur(m_source, m_horizontal, QVector2D(1.0 / size.width(), 0));
+        blur(m_horizontal, m_blurred, QVector2D(0, 1.0 / size.height()));
         return true;
     }
     void blur(Buffer &from, Buffer &to, QVector2D step)
@@ -166,6 +189,9 @@ private:
         m_shader->setUniform("sampler", 0);
         m_shader->setUniform("stepSize", step);
         m_shader->setUniform("strength", 1.0f);
+        m_shader->setUniform("kernelSize", int(m_kernel.size() / 2));
+        m_shader->setUniform("centerWeight", m_centerWeight);
+        glUniform2fv(m_shader->uniformLocation("kernel"), m_kernel.size() / 2, m_kernel.data());
         from.texture->bind();
         from.texture->render(QSizeF(to.texture->size()));
         from.texture->unbind();
