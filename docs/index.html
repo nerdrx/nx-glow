@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080a12">
+  <meta name="description" content="nx glow — an experimental content-driven desktop glow effect for KDE Plasma and KWin.">
+  <title>nx glow — light from what’s open</title>
+  <style>
+    :root { color-scheme: dark; --ink:#f3f4ff; --muted:#9b9db5; --line:#ffffff19; --panel:#111321d9; --a:#9d72ff; --b:#40dce6; --c:#ff719e; }
+    * { box-sizing:border-box }
+    html { background:#080a12; scroll-behavior:smooth }
+    body { margin:0; min-height:100vh; color:var(--ink); font:16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:radial-gradient(ellipse at 50% -20%,#242144 0,transparent 48%),#080a12; overflow-x:hidden }
+    a { color:inherit }
+    .wrap { width:min(1140px,calc(100% - 48px)); margin:auto }
+    header { height:82px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #ffffff0d }
+    .brand { display:flex; align-items:center; gap:12px; text-decoration:none; font-weight:700; letter-spacing:-.03em }
+    .mark { width:30px; height:30px; border:1px solid #ffffff30; border-radius:10px; display:grid; place-items:center; font-size:14px; color:#c7b5ff; box-shadow:0 0 24px #986cff55 }
+    .nav { display:flex; gap:26px; align-items:center; color:var(--muted); font-size:13px }
+    .nav a { text-decoration:none }.nav a:hover { color:var(--ink) }
+    .nav .repo { color:#eee9ff; padding:8px 13px; border:1px solid var(--line); border-radius:999px }
+    main { padding:82px 0 76px }
+    .hero { display:grid; grid-template-columns:.86fr 1.14fr; align-items:center; gap:48px; min-height:535px }
+    .eyebrow { color:#c3aaff; font-size:11px; text-transform:uppercase; letter-spacing:.19em; font-weight:700 }
+    h1 { margin:20px 0 18px; font-size:clamp(56px,8vw,90px); line-height:.91; letter-spacing:-.085em; font-weight:650 }
+    h1 span { color:#bca1ff }
+    .lede { max-width:440px; color:#b0b1c3; font-size:18px; line-height:1.6 }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:30px }
+    .button { padding:11px 17px; border-radius:999px; border:1px solid var(--line); text-decoration:none; font-size:13px; font-weight:650; transition:transform .2s,background .2s }
+    .button:hover { transform:translateY(-2px); background:#ffffff0d }.button.primary { background:#e9e0ff; color:#181124; border-color:transparent }.button.primary:hover { background:white }
+    .meta { color:#85879f; font-size:12px; margin-top:24px }
+    .scene { position:relative; height:420px; display:grid; place-items:center; isolation:isolate }
+    .orb { position:absolute; width:250px; height:240px; border-radius:50%; filter:blur(65px); opacity:.48; z-index:-1; animation:drift 10s ease-in-out infinite alternate }
+    .orb.one { background:#8b58ff; left:5%; top:12% }.orb.two { background:#23c8d7; right:2%; top:25%; animation-delay:-4s }.orb.three { background:#ff538c; left:35%; bottom:2%; animation-delay:-7s }
+    .window { position:absolute; overflow:hidden; background:linear-gradient(145deg,#171a29ed,#0e101aed); border:1px solid #ffffff24; border-radius:13px; box-shadow:0 28px 80px #0009, inset 0 1px #ffffff12; backdrop-filter:blur(18px) }
+    .window::after { content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; box-shadow:inset 0 -1px 26px var(--glow,#8b58ff35) }
+    .bar { height:31px; padding:0 11px; display:flex; align-items:center; gap:5px; color:#a6a8bd; font-size:9px; border-bottom:1px solid #ffffff12 }
+    .dot { width:6px; height:6px; border-radius:50%; background:#ffffff4a }
+    .bar span:last-child { margin-left:auto; margin-right:auto; transform:translateX(-10px) }
+    .editor { width:65%; height:260px; left:4%; top:12%; --glow:#8e65ff48; transform:rotate(-5deg) }
+    .editor-body { display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:22px 20px }
+    .code { color:#c0bbda; font:10px/2 ui-monospace,monospace; white-space:nowrap }.code i { color:#bc94ff; font-style:normal }.code b { color:#67dce4; font-weight:400 }
+    .swatches { display:flex; flex-direction:column; justify-content:center; gap:11px }.swatch { height:26px; border-radius:5px; border:1px solid #ffffff28 }.swatch:nth-child(1){background:linear-gradient(90deg,#956cff,#d268cf)}.swatch:nth-child(2){background:linear-gradient(90deg,#37dbe4,#7b9cff)}.swatch:nth-child(3){background:linear-gradient(90deg,#ff719e,#ffb573)}
+    .music { width:47%; height:180px; right:0; bottom:8%; --glow:#31dbe548; transform:rotate(4deg) }
+    .music-body { display:flex; align-items:center; gap:14px; padding:20px }
+    .cover { width:72px; aspect-ratio:1; border-radius:9px; background:radial-gradient(circle at 65% 32%,#fff7 0 2%,transparent 17%),linear-gradient(135deg,#32d5cf,#5447a8 58%,#ff759f); box-shadow:0 8px 20px #0007 }
+    .track { font-size:10px; font-weight:650 }.artist { color:#9b9db1; font-size:9px; margin-top:4px }.wave { height:35px; display:flex; align-items:center; gap:3px; margin:8px 20px }.wave i { display:block; width:3px; border-radius:4px; background:linear-gradient(#69e6e9,#a084ff); height:var(--h); opacity:.8 }
+    .files { width:35%; height:133px; right:3%; top:3%; --glow:#ff739e36; transform:rotate(7deg); opacity:.92 }
+    .files-body { padding:16px; display:flex; gap:8px }.file { width:34px; height:42px; border:1px solid #ffffff1a; border-radius:5px; background:linear-gradient(#ffffff10,#ffffff03); position:relative }.file:before { content:""; position:absolute; height:2px; width:17px; left:8px; top:14px; background:#ffffff35; box-shadow:0 6px #ffffff22,0 12px #ffffff15 }
+    .caption { position:absolute; bottom:-1px; color:#777990; font-size:10px; letter-spacing:.03em }
+    .below { border-top:1px solid #ffffff12; padding:34px 0 0; display:flex; justify-content:space-between; gap:40px; align-items:start }
+    .below h2 { margin:0; font-size:20px; letter-spacing:-.04em }.below p { margin:4px 0 0; color:var(--muted); max-width:680px; font-size:14px }
+    footer { border-top:1px solid #ffffff12; padding:22px 0 34px; color:#777990; font-size:11px; display:flex; justify-content:space-between; gap:16px }
+    @keyframes drift { from { transform:translate3d(-10px,-8px,0) scale(.94) } to { transform:translate3d(18px,12px,0) scale(1.09) } }
+    @media (max-width:760px) { .wrap{width:min(100% - 36px,560px)} header{height:68px}.nav{gap:14px}.nav a:first-child{display:none} main{padding:48px 0 48px}.hero{grid-template-columns:1fr;gap:16px}.lede{font-size:16px}.scene{height:330px;margin:4px -8px 0}.editor{height:220px;width:70%}.music{height:160px;width:52%}.files{width:37%;height:116px}.below{display:block}.below p{margin-top:8px} }
+    @media (max-width:430px) { .nav{gap:10px}.nav .repo{padding:7px 10px}.scene{height:290px}.editor{width:76%;height:200px}.music{width:58%;right:-2%;bottom:3%}.files{right:0}footer{display:block}footer span{display:block;margin-top:5px} }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="#top" aria-label="nx glow home"><span class="mark" aria-hidden="true">nx</span><span>nx glow</span></a>
+      <nav class="nav" aria-label="Main navigation"><a href="#about">About</a><a class="repo" href="https://github.com/nerdrx/nx-glow" target="_blank" rel="noreferrer">View on GitHub ↗</a></nav>
+    </header>
+    <main id="top">
+      <section class="hero" aria-labelledby="title">
+        <div>
+          <div class="eyebrow">An experiment for KDE Plasma</div>
+          <h1 id="title">Light from<br>what’s <span>open.</span></h1>
+          <p class="lede">A custom KWin effect exploring desktop glow shaped by the content on your screen.</p>
+          <div class="actions"><a class="button primary" href="https://github.com/nerdrx/nx-glow" target="_blank" rel="noreferrer">Explore the project ↗</a><a class="button" href="#about">How it works</a></div>
+          <p class="meta">Experimental · KWin 6.7 · Native compositor effect</p>
+        </div>
+        <div class="scene" role="img" aria-label="Illustrative desktop mockup: overlapping editor, music player, and file windows surrounded by soft purple, cyan, and pink glow. This is a CSS demo, not a screenshot.">
+          <div class="orb one"></div><div class="orb two"></div><div class="orb three"></div>
+          <div class="window editor"><div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span>Color study — Editor</span></div><div class="editor-body"><div class="code"><i>const</i> ambience = {<br>&nbsp; source: <b>activeWindow</b>,<br>&nbsp; color: <i>sample(content)</i>,<br>&nbsp; bloom: <b>soft</b>,<br>};<br><br>render(ambience);</div><div class="swatches"><div class="swatch"></div><div class="swatch"></div><div class="swatch"></div></div></div></div>
+          <div class="window files"><div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span>Files</span></div><div class="files-body"><div class="file"></div><div class="file"></div><div class="file"></div><div class="file"></div></div></div>
+          <div class="window music"><div class="bar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span>Now playing</span></div><div class="music-body"><div class="cover"></div><div><div class="track">Afterglow</div><div class="artist">Soft Signals</div></div></div><div class="wave" aria-hidden="true"><i style="--h:12px"></i><i style="--h:22px"></i><i style="--h:30px"></i><i style="--h:17px"></i><i style="--h:26px"></i><i style="--h:14px"></i><i style="--h:32px"></i><i style="--h:19px"></i><i style="--h:27px"></i><i style="--h:11px"></i><i style="--h:24px"></i><i style="--h:16px"></i><i style="--h:29px"></i><i style="--h:13px"></i><i style="--h:21px"></i><i style="--h:31px"></i><i style="--h:15px"></i><i style="--h:25px"></i><i style="--h:17px"></i></div></div>
+          <div class="caption">Illustrative CSS demo · no captured desktop footage</div>
+        </div>
+      </section>
+      <section class="below" id="about"><h2>Native effect. Early days.</h2><p>nx glow is an experimental KWin 6.7 effect built against installed KWin headers. This page illustrates the visual idea with CSS mock windows; it does not show a live capture. No recordings are stored.</p></section>
+    </main>
+    <footer><span>nx glow · KDE Plasma / KWin</span><span>Concept demo · Built with HTML &amp; CSS</span></footer>
+  </div>
+</body>
+</html>

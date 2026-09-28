@@ -1,0 +1,10 @@
+{
+  "KPlugin": {
+    "Name": "nx glow",
+    "Description": "Live window colours spill softly across your wallpaper",
+    "Category": "Appearance",
+    "License": "GPL-2.0-or-later",
+    "EnabledByDefault": false,
+    "Authors": [{"Name": "NX"}]
+  }
+}
