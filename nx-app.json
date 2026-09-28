@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nerdrx/nx-hub/main/registry/nx-app.schema.json",
+  "nxApp": 1,
+  "name": "nx glow",
+  "tagline": "Your windows light up your wallpaper",
+  "homepage": "https://nerdrx.github.io/nx-glow/",
+  "artifacts": [{
+    "assetPattern": "nx-glow-*-linux.tar.gz",
+    "label": "KDE Plasma effect + settings",
+    "kind": "tarball-prefix",
+    "platform": "linux",
+    "stripPrefix": "usr/",
+    "prefix": "~/.local",
+    "launchCmd": "~/.local/bin/nx-glow-settings",
+    "postInstallCmd": "~/.local/share/nx-glow/install.sh --gui",
+    "postInstallNote": "After installation or an update, click Run setup (or open Settings > Install / repair effect). Setup builds against your KWin headers and asks for your system password. KDE Plasma 6.7 required; Arch/CachyOS dependencies are installed during setup. Before removing the Hub package, run ~/.local/share/nx-glow/uninstall.sh --gui to remove the system effect."
+  }]
+}

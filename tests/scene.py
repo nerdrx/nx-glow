@@ -62,6 +62,21 @@ def third():
 
 def fourth():
     capture("minimized.png")
+    windows[0].setStyleSheet("background:#146aff;color:white;font-size:24px;")
+    windows[0].showNormal()
+    for key, value in (("Radius", "200"), ("Strength", "1"), ("Saturation", "0")):
+        subprocess.run(["kwriteconfig6", "--file", "kwinrc", "--group", "Effect-nxglow", "--key", key, value], check=True)
+    dbus("reconfigureEffect", "nxglow")
+    QTimer.singleShot(1000, fifth)
+
+def fifth():
+    capture("tuned.png")
+    subprocess.run(["kwriteconfig6", "--file", "kwinrc", "--group", "Effect-nxglow", "--key", "Strength", "0"], check=True)
+    dbus("reconfigureEffect", "nxglow")
+    QTimer.singleShot(1000, sixth)
+
+def sixth():
+    capture("zero.png")
     dbus("unloadEffect", "nxglow")
     print("NX_GLOW_SCENE_OK", flush=True)
     app.quit()

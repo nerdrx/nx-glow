@@ -8,7 +8,9 @@ fi
 
 PLUGIN="kwin/effects/plugins/nxglow.so"
 QTPATHS="/usr/lib/qt6/bin/qtpaths"
-for cmd in sudo kwriteconfig6 qdbus6; do
+ELEVATE=(sudo)
+if [[ ${1:-} == --gui ]]; then ELEVATE=(pkexec); fi
+for cmd in "${ELEVATE[0]}" kwriteconfig6 qdbus6; do
     command -v "$cmd" >/dev/null 2>&1 || { printf 'Missing required command: %s\n' "$cmd" >&2; exit 1; }
 done
 if [[ ! -x "$QTPATHS" ]]; then
@@ -20,5 +22,6 @@ PLUGIN_DIR="$("$QTPATHS" --plugin-dir)"
 
 kwriteconfig6 --file kwinrc --group Plugins --key nxglowEnabled false
 qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.unloadEffect nxglow || true
-sudo rm -f -- "$PLUGIN_DIR/$PLUGIN"
+"${ELEVATE[@]}" rm -f -- "$PLUGIN_DIR/$PLUGIN"
+rm -f -- "$HOME/.local/bin/nx-glow-settings" "${XDG_DATA_HOME:-$HOME/.local/share}/applications/nx-glow-settings.desktop"
 printf 'Disabled and removed nx glow from %s\n' "$PLUGIN_DIR/$PLUGIN"

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=nx glow settings
+Comment=Configure the nx glow KWin desktop effect
+Exec=nx-glow-settings
+TryExec=nx-glow-settings
+Icon=preferences-desktop-effects
+Terminal=false
+Categories=Settings;DesktopSettings;
+StartupNotify=true

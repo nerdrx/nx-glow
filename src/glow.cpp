@@ -27,6 +27,7 @@ public:
         const KConfigGroup c(effects->config(), "Effect-nxglow");
         m_radius = std::clamp(c.readEntry("Radius", 110.0), 10.0, 300.0);
         m_strength = std::clamp(c.readEntry("Strength", 0.85), 0.0, 2.0);
+        m_saturation = std::clamp(c.readEntry("Saturation", 1.0), 0.0, 2.0);
         effects->addRepaintFull();
     }
     void prePaintScreen(ScreenPrePaintData &data) override
@@ -94,7 +95,7 @@ private:
     std::unique_ptr<GLShader> m_shader;
     bool m_shaderAttempted = false;
     bool m_drawn = false, m_ready = false;
-    double m_radius = 110, m_strength = .85;
+    double m_radius = 110, m_strength = .85, m_saturation = 1;
 
     bool prepare(const RenderViewport &viewport, const RenderTarget &target)
     {
@@ -105,11 +106,15 @@ private:
                 uniform sampler2D sampler;
                 uniform vec2 stepSize;
                 uniform float strength;
+                uniform float saturation;
                 in vec2 texcoord0;
                 out vec4 fragColor;
                 void main() {
                     if (stepSize == vec2(0.0)) {
-                        fragColor = texture(sampler, texcoord0) * strength;
+                        vec4 light = texture(sampler, texcoord0);
+                        float grey = dot(light.rgb, vec3(0.2126, 0.7152, 0.0722));
+                        light.rgb = max(vec3(0), mix(vec3(grey), light.rgb, saturation));
+                        fragColor = light * strength;
                         return;
                     }
                     vec4 colour = vec4(0.0);
@@ -176,6 +181,7 @@ private:
         m_shader->setUniform(GLShader::Mat4Uniform::ModelViewProjectionMatrix, matrix);
         m_shader->setUniform("stepSize", QVector2D(0, 0));
         m_shader->setUniform("strength", float(m_strength));
+        m_shader->setUniform("saturation", float(m_saturation));
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
         m_blurred.texture->bind();

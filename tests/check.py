@@ -18,3 +18,11 @@ assert max(abs(a-b) for a, b in zip(before, minimized)) < 5, (before, minimized)
 assert pixel("before", (300, 250)) == pixel("after", (300, 250))
 assert pixel("after", (1210, 500))[0] > pixel("before", (1210, 500))[0] + 12
 print("PASS: coloured spill, live colour update, minimized cleanup, sharp app content")
+for name in ("tuned", "zero"):
+    images[name] = Image.open(out / f"{name}.png").convert("RGB")
+delta = [a-b for a, b in zip(pixel("tuned", probe), before)]
+assert min(delta) > 12 and max(delta) - min(delta) < 5, delta
+far = (150, 320)
+assert pixel("tuned", far)[2] > pixel("after", far)[2] + 5
+assert pixel("zero", probe) == before
+print("PASS: live radius, saturation and brightness controls")
