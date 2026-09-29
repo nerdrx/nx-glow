@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-version=${1:-0.1.2}
+version=${1:-0.1.3}
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Expected a numeric x.y.z version' >&2; exit 1; }
 stage=$(mktemp -d)
 trap 'rm -rf -- "$stage"' EXIT

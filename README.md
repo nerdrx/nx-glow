@@ -49,7 +49,7 @@ It also verifies live radius, brightness and saturation changes. The Qt control 
 timeout -k 3 20 gamescope --backend headless -W 800 -H 700 -- env QT_QPA_PLATFORM=xcb python tests/settings_smoke.py
 ```
 
-Build the source bundle with `./package.sh`. Test it against an NX Hub checkout with `node tests/hub.cjs /path/to/nx-hub dist/nx-glow-0.1.2-linux.tar.gz`; this invokes Hub's real manifest validator and install/uninstall engine in temporary directories.
+Build the source bundle with `./package.sh`. Test it against an NX Hub checkout with `node tests/hub.cjs /path/to/nx-hub dist/nx-glow-0.1.3-linux.tar.gz`; this invokes Hub's real manifest validator and install/uninstall engine in temporary directories.
 
 ## License
 

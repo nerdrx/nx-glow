@@ -23,7 +23,7 @@ public:
     bool isActive() const override { return !effects->isScreenLocked() && !effects->activeFullScreenEffect(); }
     int requestedEffectChainPosition() const override { return 90; }
     bool blocksDirectScanout() const override { return isActive(); }
-    QString debug(const QString &) const override { return QStringLiteral("nx glow 0.1.2: native KDE settings, contiguous Gaussian taps"); }
+    QString debug(const QString &) const override { return QStringLiteral("nx glow 0.1.3: native KDE settings, contiguous Gaussian taps"); }
     void reconfigure(ReconfigureFlags) override
     {
         const KConfigGroup c(effects->config(), "Effect-nxglow");
