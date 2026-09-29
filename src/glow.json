@@ -1,4 +1,5 @@
 {
+  "X-KDE-ConfigModule": "nxglow_config",
   "KPlugin": {
     "Name": "nx glow",
     "Description": "Live window colours spill softly across your wallpaper",

@@ -16,7 +16,7 @@ command -v "${ELEVATE[0]}" >/dev/null || { echo "Missing ${ELEVATE[0]}" >&2; exi
 # Arch/CachyOS can resolve the native build dependencies during setup.
 if command -v pacman >/dev/null; then
     missing=()
-    for package in cmake ninja gcc pkgconf kwin qt6-base qt6-declarative extra-cmake-modules vulkan-headers pyside6; do
+    for package in cmake ninja gcc pkgconf kwin qt6-base qt6-declarative extra-cmake-modules vulkan-headers pyside6 kcmutils; do
         pacman -Q "$package" >/dev/null 2>&1 || missing+=("$package")
     done
     if ((${#missing[@]})); then
@@ -36,7 +36,9 @@ fi
 cmake -S "$ROOT" -B "$BUILD_DIR"
 cmake --build "$BUILD_DIR" --parallel
 BINARY="$BUILD_DIR/plugins/$PLUGIN"
+CONFIG_BINARY="$BUILD_DIR/plugins/kwin/effects/configs/nxglow_config.so"
 [[ -f "$BINARY" ]] || { printf 'Build did not produce expected plugin: %s\n' "$BINARY" >&2; exit 1; }
+[[ -f "$CONFIG_BINARY" ]] || { echo 'Build did not produce the native settings module.' >&2; exit 1; }
 PLUGIN_DIR="$("$QTPATHS" --plugin-dir)"
 [[ -n "$PLUGIN_DIR" && "$PLUGIN_DIR" = /* ]] || { printf 'Invalid Qt plugin directory: %s\n' "$PLUGIN_DIR" >&2; exit 1; }
 # Qt keeps loaded plugin libraries cached. A unique real path lets updates
@@ -47,13 +49,19 @@ VERSIONED="$PLUGIN_DIR/kwin/effects/nxglow/$BUILD_ID/nxglow.so"
 "${ELEVATE[@]}" install -Dm755 "$BINARY" "$VERSIONED"
 "${ELEVATE[@]}" mkdir -p "$PLUGIN_DIR/kwin/effects/plugins"
 "${ELEVATE[@]}" ln -sfn "$VERSIONED" "$PLUGIN_DIR/$PLUGIN"
+CONFIG_ID=$(sha256sum "$CONFIG_BINARY")
+CONFIG_ID=${CONFIG_ID%% *}
+CONFIG_VERSIONED="$PLUGIN_DIR/kwin/effects/nxglow/$CONFIG_ID/nxglow_config.so"
+"${ELEVATE[@]}" install -Dm755 "$CONFIG_BINARY" "$CONFIG_VERSIONED"
+"${ELEVATE[@]}" mkdir -p "$PLUGIN_DIR/kwin/effects/configs"
+"${ELEVATE[@]}" ln -sfn "$CONFIG_VERSIONED" "$PLUGIN_DIR/kwin/effects/configs/nxglow_config.so"
 qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.unloadEffect nxglow >/dev/null || true
 kwriteconfig6 --file kwinrc --group Plugins --key nxglowEnabled true
 LOAD_RESULT="$(qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.loadEffect nxglow)"
 [[ "$LOAD_RESULT" == true ]] || { printf 'KWin did not load nx glow (result: %s)\n' "$LOAD_RESULT" >&2; exit 1; }
 SHARE="${XDG_DATA_HOME:-$HOME/.local/share}/nx-glow"
 if [[ "$ROOT" != "$SHARE" ]]; then
-    for file in CMakeLists.txt settings.py install.sh uninstall.sh launch.sh nx-glow-settings.desktop src/glow.cpp src/glow.json; do
+    for file in CMakeLists.txt settings.py install.sh uninstall.sh launch.sh nx-glow-settings.desktop src/glow.cpp src/glow.json src/config.cpp; do
         install -Dm644 "$ROOT/$file" "$SHARE/$file"
     done
 fi

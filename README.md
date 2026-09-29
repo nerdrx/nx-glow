@@ -22,7 +22,9 @@ Hub manages the user package; the system plugin needs separate removal. Before u
 
 Run `./install.sh` (terminal authentication) or `./install.sh --gui` (desktop authentication) as your user. It builds locally and elevates only dependency installation and the plugin copy. Arch/CachyOS dependencies are installed as needed; other distributions need their equivalent KWin, Qt, KDE Frameworks, CMake, compiler, Vulkan headers, and PySide6 development/runtime packages.
 
-Setup adds **nx glow settings** to your application menu. It provides live glow size, brightness, colour intensity, enable/disable, and reset. You can also launch it with `nx-glow-settings`.
+Open **System Settings → Desktop Effects → nx glow → Configure** for the native size, brightness and colour controls. Apply saves changes; Reset restores defaults. Reopen the Desktop Effects page after installation if it was already open.
+
+Setup also adds **nx glow settings** to your application menu. It provides live glow size, brightness, colour intensity, enable/disable, and reset. You can also launch it with `nx-glow-settings`.
 
 To build without installing, run `cmake -S . -B build && cmake --build build`. After KWin ABI updates, rebuild and reinstall the effect.
 
@@ -47,8 +49,10 @@ It also verifies live radius, brightness and saturation changes. The Qt control 
 timeout -k 3 20 gamescope --backend headless -W 800 -H 700 -- env QT_QPA_PLATFORM=xcb python tests/settings_smoke.py
 ```
 
-Build the source bundle with `./package.sh`. Test it against an NX Hub checkout with `node tests/hub.cjs /path/to/nx-hub dist/nx-glow-0.1.1-linux.tar.gz`; this invokes Hub's real manifest validator and install/uninstall engine in temporary directories.
+Build the source bundle with `./package.sh`. Test it against an NX Hub checkout with `node tests/hub.cjs /path/to/nx-hub dist/nx-glow-0.1.2-linux.tar.gz`; this invokes Hub's real manifest validator and install/uninstall engine in temporary directories.
 
 ## License
 
 GPL-2.0-or-later. See [LICENSE](LICENSE).
+
+Native settings plugin validation: `tests/config-smoke.sh` builds and loads the real KCModule, checks save/defaults/reload, and renders it inside hidden Gamescope with an isolated configuration and D-Bus session.
